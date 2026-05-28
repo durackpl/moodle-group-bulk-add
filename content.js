@@ -11,7 +11,8 @@ async function readProcessingFlag() {
 }
 
 
-function ensureOverlay(isProcessing, studentInput) {
+function ensureOverlay(isProcessing, studentInput, processingReport) {
+
     let $overlay = $("#MGAoverlay");
 
     if (!$overlay.length) {
@@ -23,13 +24,19 @@ function ensureOverlay(isProcessing, studentInput) {
             class="hw-textarea"
             id="MGA_inputTA"
             rows="10"
-            cols="40"
             placeholder="Enter one student per line"
           ></textarea>
 
           <button class="hw-button" id="MGA_addBT">
             Bulk Add Students
           </button>
+
+          <textarea
+            class="hw-textarea"
+            id="MGA_reportTA"
+            rows="10"
+            readonly
+          ></textarea>
 
         </div>
       </div>
@@ -38,6 +45,7 @@ function ensureOverlay(isProcessing, studentInput) {
         $('body').append($overlay);
 
         $("#MGA_inputTA").val(studentInput);
+        $("#MGA_reportTA").val(processingReport);
         
         $("#MGA_inputTA").on("input", () => {
             browser.storage.local.set({
@@ -46,10 +54,17 @@ function ensureOverlay(isProcessing, studentInput) {
         });
 
         $("#MGA_addBT").on("click", () => {
-            $("#MGA_addBT").prop("disabled", true);
-
+            const report = "Processing started...";
             browser.storage.local
-                .set({ processing: true })
+                .set({
+                    processing: true,
+                    MGAprocesingReport : report
+                })
+                .then(() => {
+                    console.log('Started processing');
+                    $("#MGA_addBT").prop("disabled", true);
+                    $("#MGA_reportTA").val(report);
+                })
                 .then(continue_processing);
         });
 
@@ -57,6 +72,7 @@ function ensureOverlay(isProcessing, studentInput) {
     }
 
 
+    console.log(`Processing: ${isProcessing}`);
     $("#MGA_addBT").prop("disabled", isProcessing);
 
     if (isProcessing) {
@@ -107,7 +123,7 @@ function type_search_string(text) {
     });
 }
 
-function wait_for_unique_match(success, failure, interval, timeout) {
+function wait_for_unique_match(success, failure, match, interval, timeout) {
 
     let fid, tid;
     
@@ -115,18 +131,17 @@ function wait_for_unique_match(success, failure, interval, timeout) {
 
         fid = setTimeout(
             () => {
-                reject("timeout");
+                reject(`timeout (non unique match) on ${match}`);
             },
             timeout);
 
         tid = setInterval(
             () => {
-                console.log('check for success');
                 if (success()) {
                     resolve();
                 }
                 if (failure()) {
-                    reject('no match');
+                    reject(`no match on ${match}`);
                 }	
             },
             interval);
@@ -138,28 +153,69 @@ function wait_for_unique_match(success, failure, interval, timeout) {
 }
 
 async function continue_processing() {
+    /*
+     * Process the next pending name from the saved textarea content.
+     *
+     * Steps:
+     * 1. Load the saved multiline input from browser.storage.local.
+     * 2. Split it into non-empty trimmed lines.
+     * 3. If there are no lines left, stop processing and re-enable the UI.
+     * 4. Otherwise remove the first line from the queue, save the remainder,
+     *    and try to select that name in Moodle.
+     * 5. If the name is successfully selected, click the Add button to reload
+     *    the page and continue with the next name.
+     * 6. If an error occurs, log it to the report and recurse so the next name
+     *    can still be attempted.
+     */
+
     const lines = await browser.storage.local.get("studentInput")
-          .then((result) => result.studentInput.split("\n")
-                .map(x => x.trim())
-                .filter(x => x.length > 0));
+        .then((result) => (result.studentInput || "")
+            .split("\n")
+            .map(x => x.trim())
+            .filter(x => x.length > 0));
 
-    if (lines.length > 0) {
+    if (lines.length === 0) {
+        await addToReport("...Processing finished");
+        $("#MGA_addBT").prop("disabled", false);
+        await browser.storage.local.set({ processing: false });
+        console.log("Stopped processing");
+        return;
+    }
 
+    const $addButton = $("#add");
+    if (!$addButton.length) {
+        throw new Error("No add button");
+    }
+
+    try {
         const text = lines.shift();
 
+        // Save the remaining queue before the page reloads.
+        $("#MGA_inputTA").val(lines.join("\n"));
         await browser.storage.local.set({
-            studentInput: lines.join('\n')
+            studentInput: lines.join("\n")
         });
 
-        await bulk_add(text);
-        
-    } else {
-        $("#MGA_addBT").prop("disabled", true);
-        await browser.storage.local.set({ processing : false });
+        // Try to find and select the matching user for this line.
+        // This function is expected to throw if there is no match or no unique match.
+        await select_name_to_add_to_group(text);
+
+        console.log(`added: ${text}`);
+        await addToReport(`added: ${text}`);
+
+        // Reloads the page by submitting the Moodle add action.
+        $addButton[0].click();
+
+    } catch (e) {
+        await addToReport(`error: ${e}`);
+        console.log(e);
+
+        // Retry with the next pending line after an error.
+        await continue_processing();
     }
 }
 
-function bulk_add(text) {
+function select_name_to_add_to_group(text) {
     return type_search_string(text)
         .then(() => {
             return wait_for_unique_match(
@@ -171,6 +227,7 @@ function bulk_add(text) {
                     const $options = $("#addselect option");
                     return $options.length === 1 && $options[0].disabled;
                 },
+                text,
                 100,
                 2000
             );
@@ -181,15 +238,6 @@ function bulk_add(text) {
             // Notify Moodle selection changed
             $("#addselect")[0].dispatchEvent(new Event("change", { bubbles: true }));
 
-            const $addButton = $("#add");
-            if ($addButton.length) {
-                $addButton[0].click();
-            } else {
-                throw new Error("No add button");
-            }
-        })
-        .catch((e) => {
-            console.log(e);
         });
 }
 
@@ -203,23 +251,40 @@ function studentInput() {
         .then(({ studentInput }) => studentInput);
 }
 
+function processingReport() {
+    return browser.storage.local
+        .get({ MGAprocesingReport: "" })
+        .then(({ MGAprocesingReport }) => MGAprocesingReport);
+}
+
+async function addToReport(message) {
+    let report = await processingReport();
+    report += `\n${message}`;
+    await browser.storage.local.set({
+        MGAprocesingReport : report
+    });
+    $("#MGA_reportTA").val(report);
+}
+
+
+
 async function syncOverlayFromStorage() {
     const enabled = await readEnabledFlag();
   if (enabled) {
-      ensureOverlay(await readProcessingFlag(), await studentInput());
+      ensureOverlay(await readProcessingFlag(),
+                    await studentInput(),
+                    await processingReport());
   } else {
     removeOverlay();
   }
 }
 
-
-
-
-
 browser.runtime.onMessage.addListener(async (message) => {
   if (message && message.type === 'toggle-overlay') {
     if (message.enabled) {
-        ensureOverlay(await readProcessingFlag(), await studentInput());
+        ensureOverlay(await readProcessingFlag(),
+                      await studentInput(),
+                      await processingReport());
     } else {
         removeOverlay();
     }
