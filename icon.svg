@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="128"
+   height="128"
+   viewBox="0 0 128 128"
+   version="1.1"
+   id="svg6"
+   sodipodi:docname="icon.svg"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <sodipodi:namedview
+     id="namedview8"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="8.0234375"
+     inkscape:cx="53.34372"
+     inkscape:cy="63.937683"
+     inkscape:current-layer="svg6" />
+  <rect
+     x="8"
+     y="8"
+     width="112"
+     height="112"
+     rx="20"
+     fill="#4b7bec"
+     id="rect2" />
+  <text
+     x="64"
+     y="76"
+     font-size="28px"
+     text-anchor="middle"
+     fill="#ffffff"
+     font-family="Arial, sans-serif"
+     id="text4">GMA</text>
+</svg>

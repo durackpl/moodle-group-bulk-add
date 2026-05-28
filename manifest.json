@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+  "name": "Moodle Groups Automation",
+  "version": "1.0.0",
+  "description": "Toggle a hello world overlay on matching pages.",
+  "permissions": ["storage", "tabs", "activeTab", "*://moodle.telt.unsw.edu.au/*"],
+  "browser_action": {
+    "default_title": "Toggle Hello World",
+    "default_icon": "icon.svg"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://moodle.telt.unsw.edu.au/group/members.php*"],
+      "js": ["content.js"],
+      "css": ["overlay.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
