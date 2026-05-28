@@ -14,7 +14,7 @@
   "content_scripts": [
     {
       "matches": ["*://moodle.telt.unsw.edu.au/group/members.php*"],
-      "js": ["content.js"],
+	"js": ["jquery-4.0.0.min.js", "content.js"],
       "css": ["overlay.css"],
       "run_at": "document_idle"
     }
