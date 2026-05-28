@@ -62,6 +62,75 @@ overlay.innerHTML = `
                 .filter(x => x.length > 0);
 
           console.log(lines);
+
+          const input = document.querySelector("#addselect_searchtext");
+
+          if (input && lines.length > 0) {
+              const text = lines[0];
+
+              // Focus the field
+              input.focus();
+
+              // Clear existing value
+              input.value = "";
+
+              // Simulate typing character-by-character
+              let index = 0;
+
+              const interval = setInterval(() => {
+                  if (index >= text.length) {
+                      clearInterval(interval);
+
+                      // Trigger final change events
+                      input.dispatchEvent(new Event("change", { bubbles: true }));
+
+                      setTimeout(() => {
+                          const select = document.querySelector("#addselect");
+                          const options = select ? select.querySelectorAll("option") : [];
+
+                          if (options.length === 0) {
+                              console.log("no match");
+                          } else if (options.length > 1) {
+                              console.log("too many matches");
+                          } else {
+                              console.log("bingo");
+
+                              const option = options[0];
+
+                              // Select the option
+                              option.selected = true;
+
+                              // Notify Moodle selection changed
+                              select.dispatchEvent(new Event("change", { bubbles: true }));
+
+                              setTimeout(() => {
+
+                                  // Click the Add button
+                                  const addButton = document.querySelector("#add");
+
+                                  if (addButton) {
+                                      addButton.click();
+                                  }
+
+                              }, 100);
+                              
+                          }
+                      }, 1000);
+                      
+                      return;
+                  }
+
+                  input.value += text[index];
+
+                  // Trigger events so Moodle incremental search reacts
+                  input.dispatchEvent(new Event("input", { bubbles: true }));
+                  input.dispatchEvent(new KeyboardEvent("keyup", { bubbles: true }));
+
+                  index++;
+              }, 80);
+          }
+
+          
       }
 
       
