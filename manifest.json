@@ -2,10 +2,10 @@
   "manifest_version": 2,
   "name": "Moodle Group Bulk Add",
   "version": "1.0.0",
-  "description": "Toggle a hello world overlay on matching pages.",
+  "description": "Moodle Group Bulk Add",
   "permissions": ["storage", "tabs", "activeTab", "*://moodle.telt.unsw.edu.au/*"],
   "browser_action": {
-    "default_title": "Toggle Hello World",
+    "default_title": "Moodle Group Bulk Add",
     "default_icon": "icon.svg"
   },
   "background": {
