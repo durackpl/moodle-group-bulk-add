@@ -5,13 +5,61 @@ async function getEnabled() {
   return Boolean(result[STORAGE_KEY]);
 }
 
-async function readProcessingFlag() {
-  const result = await browser.storage.local.get({ processing: false });
-  return Boolean(result.processing);
+function processingON() {
+    localStorage.setItem("MGAprocessingON", "true");
+
+    $("#MGA_addBT").prop("disabled", true);
+
+    console.log("Processing ON");
 }
 
+function processingOFF() {
+    localStorage.setItem("MGAprocessingON", "false");
 
-function ensureOverlay(isProcessing, studentInput, processingReport) {
+    $("#MGA_addBT").prop("disabled", false);
+
+    console.log("Processing OFF");
+}
+
+function isProcessingON() {
+    return localStorage.getItem("MGAprocessingON") === "true";
+}
+
+function getReport() {
+    return localStorage.getItem("MGAreport") || "";
+}
+
+function setReport(text) {
+    localStorage.setItem("MGAreport", text);
+    $("#MGA_reportTA").val(text);
+}
+
+function addToReport(text) {
+    const report = getReport();
+
+    setReport(
+        report.length === 0
+            ? text
+            : report + "\n" + text
+    );
+}
+
+function getInput() {
+    return localStorage.getItem("MGAinput") || "";
+}
+
+function setInput(text, sync = true) {
+    localStorage.setItem("MGAinput", text);
+    if (sync) {
+        $("#MGA_inputTA").val(text);
+    }
+}
+
+function ensureOverlay() {
+
+    const isProcessing = isProcessingON();
+    const _input = getInput();
+    const _report = getReport();
 
     let $overlay = $("#MGAoverlay");
 
@@ -44,28 +92,15 @@ function ensureOverlay(isProcessing, studentInput, processingReport) {
 
         $('body').append($overlay);
 
-        $("#MGA_inputTA").val(studentInput);
-        $("#MGA_reportTA").val(processingReport);
+        $("#MGA_inputTA").val(_input);
+        $("#MGA_reportTA").val(_report);
         
-        $("#MGA_inputTA").on("input", () => {
-            browser.storage.local.set({
-                studentInput: $("#MGA_inputTA").val()
-            });
-        });
+        $("#MGA_inputTA").on("input", () => setInput($("#MGA_inputTA").val(), false));
 
         $("#MGA_addBT").on("click", () => {
-            const report = "Processing started...";
-            browser.storage.local
-                .set({
-                    processing: true,
-                    MGAprocesingReport : report
-                })
-                .then(() => {
-                    console.log('Started processing');
-                    $("#MGA_addBT").prop("disabled", true);
-                    $("#MGA_reportTA").val(report);
-                })
-                .then(continue_processing);
+            processingON();
+            setReport("Processing started...");
+            continue_processing();
         });
 
         $overlay.show();
@@ -168,17 +203,13 @@ async function continue_processing() {
      *    can still be attempted.
      */
 
-    const lines = await browser.storage.local.get("studentInput")
-        .then((result) => (result.studentInput || "")
-            .split("\n")
-            .map(x => x.trim())
-            .filter(x => x.length > 0));
+    const lines = getInput().split("\n")
+          .map(x => x.trim())
+          .filter(x => x.length > 0);
 
     if (lines.length === 0) {
-        await addToReport("...Processing finished");
-        $("#MGA_addBT").prop("disabled", false);
-        await browser.storage.local.set({ processing: false });
-        console.log("Stopped processing");
+        addToReport("...Processing finished");
+        processingOFF();
         return;
     }
 
@@ -191,23 +222,20 @@ async function continue_processing() {
         const text = lines.shift();
 
         // Save the remaining queue before the page reloads.
-        $("#MGA_inputTA").val(lines.join("\n"));
-        await browser.storage.local.set({
-            studentInput: lines.join("\n")
-        });
+        setInput(lines.join("\n"));
 
         // Try to find and select the matching user for this line.
         // This function is expected to throw if there is no match or no unique match.
         await select_name_to_add_to_group(text);
 
         console.log(`added: ${text}`);
-        await addToReport(`added: ${text}`);
+        addToReport(`added: ${text}`);
 
         // Reloads the page by submitting the Moodle add action.
         $addButton[0].click();
 
     } catch (e) {
-        await addToReport(`error: ${e}`);
+        addToReport(`error: ${e}`);
         console.log(e);
 
         // Retry with the next pending line after an error.
@@ -245,35 +273,10 @@ function removeOverlay() {
   $("#MGAoverlay").remove();
 }
 
-function studentInput() {
-    return browser.storage.local
-        .get({ studentInput: "" })
-        .then(({ studentInput }) => studentInput);
-}
-
-function processingReport() {
-    return browser.storage.local
-        .get({ MGAprocesingReport: "" })
-        .then(({ MGAprocesingReport }) => MGAprocesingReport);
-}
-
-async function addToReport(message) {
-    let report = await processingReport();
-    report += `\n${message}`;
-    await browser.storage.local.set({
-        MGAprocesingReport : report
-    });
-    $("#MGA_reportTA").val(report);
-}
-
-
-
 async function syncOverlayFromStorage() {
     const enabled = await getEnabled();
   if (enabled) {
-      ensureOverlay(await readProcessingFlag(),
-                    await studentInput(),
-                    await processingReport());
+      ensureOverlay();
   } else {
     removeOverlay();
   }
@@ -282,9 +285,7 @@ async function syncOverlayFromStorage() {
 browser.runtime.onMessage.addListener(async (message) => {
   if (message && message.type === 'toggle-overlay') {
     if (message.enabled) {
-        ensureOverlay(await readProcessingFlag(),
-                      await studentInput(),
-                      await processingReport());
+        ensureOverlay();
     } else {
         removeOverlay();
     }
