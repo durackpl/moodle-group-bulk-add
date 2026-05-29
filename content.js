@@ -14,6 +14,8 @@ function processingON() {
 
     $("#MGA_addBT").prop("disabled", true);
 
+    $("#MGA_status").text("Processing...");
+    
     console.log("Processing ON");
 }
 
@@ -21,7 +23,8 @@ function processingOFF() {
     localStorage.setItem("MGAprocessingON", "false");
 
     $("#MGA_addBT").prop("disabled", false);
-
+    $("#MGA_status").text("Idle");
+    
     console.log("Processing OFF");
 }
 
@@ -69,34 +72,97 @@ function ensureOverlay() {
 
     if (!$overlay.length) {
         $overlay = $(`
-      <div id="MGAoverlay" style="display: block">
-        <div class="hw-panel">
+<div id="MGAoverlay"
+     style="
+       position: fixed;
+       top: 20px;
+       right: 20px;
+       z-index: 999999;
+       background: #fff;
+       border: 1px solid #888;
+       border-radius: 8px;
+       padding: 12px;
+       width: 360px;
+       max-height: 90vh;
+       overflow: auto;
+       box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+       font-family: sans-serif;
+     ">
 
-          <textarea
-            class="hw-textarea"
-            id="MGA_inputTA"
-            rows="10"
-            placeholder="Enter one student per line"
-          ></textarea>
+  <div style="
+       font-weight: bold;
+       font-size: 14px;
+       margin-bottom: 8px;
+     ">
+    Moodle Group Bulk Add
+  </div>
 
-          <button class="hw-button" id="MGA_addBT">
-            Bulk Add Students
-          </button>
+  <textarea
+      id="MGA_inputTA"
+      rows="18"
+      placeholder="Enter one student per line. A zID, email address, or partial name is sufficient if it produces a unique match. Click Add List to add all listed students to this group automatically."
+      style="
+        width: 100%;
+        box-sizing: border-box;
+        resize: vertical;
+        font-family: monospace;
+        margin-bottom: 10px;
+        padding: 8px;
+      "
+  ></textarea>
 
-          <button class="hw-button" id="MGA_closeBT">
-            Close Window
-          </button>
+  <div style="
+       display: flex;
+       gap: 10px;
+       margin-bottom: 8px;
+     ">
+    <button
+        id="MGA_addBT"
+        style="
+          flex: 1;
+          padding: 8px;
+          cursor: pointer;
+        ">
+      Add List
+    </button>
 
-          <textarea
-            class="hw-textarea"
-            id="MGA_reportTA"
-            rows="10"
-            readonly
-          ></textarea>
+    <button
+        id="MGA_closeBT"
+        style="
+          flex: 1;
+          padding: 8px;
+          cursor: pointer;
+        ">
+      Close Window
+    </button>
+  </div>
 
-        </div>
-      </div>
-    `);
+  <div
+      id="MGA_status"
+      style="
+        font-size: 12px;
+        color: #555;
+        margin-bottom: 8px;
+      ">
+    Idle
+  </div>
+
+  <textarea
+      id="MGA_reportTA"
+      rows="6"
+      readonly
+      style="
+        width: 100%;
+        box-sizing: border-box;
+        resize: vertical;
+        font-family: monospace;
+        background: #f5f5f5;
+        color: #333;
+        padding: 8px;
+      "
+  ></textarea>
+</div>
+`);
 
         $('body').append($overlay);
 
@@ -306,7 +372,3 @@ browser.runtime.onMessage.addListener(async (message) => {
 });
 
 syncOverlayFromStorage();
-
-
-
-

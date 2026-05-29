@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Moodle Groups Automation",
+  "name": "Moodle Group Bulk Add",
   "version": "1.0.0",
   "description": "Toggle a hello world overlay on matching pages.",
   "permissions": ["storage", "tabs", "activeTab", "*://moodle.telt.unsw.edu.au/*"],
@@ -15,7 +15,6 @@
     {
       "matches": ["*://moodle.telt.unsw.edu.au/group/members.php*"],
 	"js": ["jquery-4.0.0.min.js", "content.js"],
-      "css": ["overlay.css"],
       "run_at": "document_idle"
     }
   ]
