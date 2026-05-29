@@ -5,6 +5,10 @@ async function getEnabled() {
   return Boolean(result[STORAGE_KEY]);
 }
 
+async function setEnabled(value) {
+  await browser.storage.local.set({ [STORAGE_KEY]: value });
+}
+
 function processingON() {
     localStorage.setItem("MGAprocessingON", "true");
 
@@ -79,6 +83,10 @@ function ensureOverlay() {
             Bulk Add Students
           </button>
 
+          <button class="hw-button" id="MGA_closeBT">
+            Close Window
+          </button>
+
           <textarea
             class="hw-textarea"
             id="MGA_reportTA"
@@ -97,6 +105,11 @@ function ensureOverlay() {
         
         $("#MGA_inputTA").on("input", () => setInput($("#MGA_inputTA").val(), false));
 
+        $("#MGA_closeBT").on("click", async () => {
+            await setEnabled(false);
+            removeOverlay();
+        });
+        
         $("#MGA_addBT").on("click", () => {
             processingON();
             setReport("Processing started...");
