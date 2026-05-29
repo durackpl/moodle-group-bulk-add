@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'MGAEnabled';
 
-async function readEnabledFlag() {
+async function getEnabled() {
   const result = await browser.storage.local.get({ [STORAGE_KEY]: false });
   return Boolean(result[STORAGE_KEY]);
 }
@@ -269,7 +269,7 @@ async function addToReport(message) {
 
 
 async function syncOverlayFromStorage() {
-    const enabled = await readEnabledFlag();
+    const enabled = await getEnabled();
   if (enabled) {
       ensureOverlay(await readProcessingFlag(),
                     await studentInput(),
