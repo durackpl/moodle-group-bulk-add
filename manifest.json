@@ -3,19 +3,49 @@
   "name": "Moodle Group Bulk Add",
   "version": "1.0.0",
   "description": "Moodle Group Bulk Add",
-  "permissions": ["storage", "tabs", "activeTab", "*://moodle.telt.unsw.edu.au/*"],
+
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "*://moodle.telt.unsw.edu.au/*"
+  ],
+
   "browser_action": {
     "default_title": "Moodle Group Bulk Add",
     "default_icon": "icon.svg"
   },
+
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
+
   "content_scripts": [
     {
-      "matches": ["*://moodle.telt.unsw.edu.au/group/members.php*"],
-	"js": ["jquery-4.0.0.min.js", "content.js"],
+      "matches": [
+        "*://moodle.telt.unsw.edu.au/group/members.php*"
+      ],
+      "js": [
+        "jquery-4.0.0.min.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
-  ]
+  ],
+
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "moodle-group-bulk-add@potapov.id.au",
+
+      "update_url": "https://potapov.id.au/moodle_group_bulk_add/updates.json",
+
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  }
 }
