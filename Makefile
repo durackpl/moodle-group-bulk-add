@@ -1,4 +1,4 @@
-EXTDIR := extension
+EXTDIR := src
 XPI := moodle_group_bulk_add.xpi
 
 .PHONY: all clean
