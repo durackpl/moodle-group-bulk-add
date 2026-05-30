@@ -1,0 +1,12 @@
+{
+  "addons": {
+    "moodle-group-bulk-add@potapov.id.au": {
+      "updates": [
+        {
+          "version": "1.0.1",
+          "update_link": "https://github.com/durackpl/moodle-group-bulk-add/releases/download/v1.0.1/moodle_group_bulk_add-1.0.1.xpi"
+        }
+      ]
+    }
+  }
+}

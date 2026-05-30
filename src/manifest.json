@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Moodle Group Bulk Add",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Moodle Group Bulk Add",
 
   "permissions": [
@@ -39,7 +39,7 @@
     "gecko": {
       "id": "moodle-group-bulk-add@potapov.id.au",
 
-      "update_url": "https://potapov.id.au/moodle_group_bulk_add/updates.json",
+      "update_url": "https://durackpl.github.io/moodle-group-bulk-add/updates.json",
 
       "data_collection_permissions": {
         "required": [
