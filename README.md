@@ -6,6 +6,10 @@ The standard Moodle group membership interface allows users to be added or remov
 
 With this extension, you can enter a list of students—one per line—and add them to a group automatically. Each entry can be a userID, email address, full name, or partial name, provided it uniquely identifies a student.
 
+## Installation
+
+Download and install the extension from the [latest release](https://github.com/durackpl/moodle-group-bulk-add/releases/latest).
+
 ## Features
 
 * Add multiple students to a Moodle group in a single operation.
@@ -21,6 +25,8 @@ With this extension, you can enter a list of students—one per line—and add t
 3. Enter one student per line, or paste a list of students from the clipboard.
 4. Click **Add List**.
 5. The extension will process the list and add matching students to the group automatically.
+
+For detailed installation and usage instructions, see the [How-To Guide](https://durackpl.github.io/moodle-group-bulk-add/).
 
 ## Requirements
 
